@@ -181,6 +181,9 @@ de forma explícita.
 - **Causa:** División entre cero (`0 / 0`), que en JavaScript produce `NaN`.
 - **Corrección:** Se añadió una guarda `if (ventasValidas === 0) return 0;` antes de realizar la división, garantizando `0` (y sin `NaN` ni errores) en días sin ventas o arreglos vacíos.
 
+---
+
+
 
 ## MiniReto 5
 
@@ -197,3 +200,76 @@ de forma explícita.
 - **`totalVendidoInst` — $O(n)$ (tiempo lineal):** Ejecuta un único ciclo `for...of` de `1` a `n` iteraciones, haciendo un trabajo constante por venta.
 - **`ventaMayorInst` — $O(n)$ (tiempo lineal):** Recorre el arreglo una sola vez (`n` elementos) y realiza comparaciones de costo constante en cada paso.
 - **`totalPorCiudadInst` — $O(n)$ en tiempo promedio (lineal):** Recorre los `n` registros una vez y normaliza/acumula en un objeto diccionario; las ciudades son un conjunto acotado (4 ciudades), por lo que el trabajo por registro es constante.
+
+---
+
+
+
+## MiniReto 6
+
+**Objetivo**: Diagnosticar la complejidad de una función con ciclos anidados, medir su
+ tiempo real y predecir su comportamiento con volúmenes que todavía no
+existen.
+
+### 1. Traza con un arreglo de 5 ventas y generalización
+
+Supongamos un arreglo de 5 ventas con clientes:
+`["C01", "C02", "C01", "C03", "C02"]` (índices `0` a `4`).
+
+- `i = 0` (`"C01"`): compara `j = 1, 2, 3, 4` → **4 comparaciones** (`j = 2` coincide → agrega `"C01"`).
+- `i = 1` (`"C02"`): compara `j = 2, 3, 4` → **3 comparaciones** (`j = 4` coincide → agrega `"C02"`).
+- `i = 2` (`"C01"`): compara `j = 3, 4` → **2 comparaciones**.
+- `i = 3` (`"C03"`): compara `j = 4` → **1 comparación**.
+- `i = 4` (`"C02"`): `j` inicia en `5` y no entra → **0 comparaciones**.
+
+Total de comparaciones para $n = 5$:
+
+$$
+4 + 3 + 2 + 1 = 10 \text{ comparaciones}
+$$
+
+**Generalización para $n$ ventas:**
+La suma de pares $(i, j)$ con $0 \le i < j < n$ es:
+
+$$
+\text{Comparaciones} = \frac{n(n - 1)}{2} = \frac{n^2 - n}{2}
+$$
+
+Al crecer $n$, el término dominante es $\frac{n^2}{2}$, lo que corresponde a un crecimiento cuadrático **$O(n^2)$**.
+
+### 2. Mediciones de tiempo al duplicar $n$
+
+*(Reemplaza los valores de `Tiempo (ms)` con los que obtengas al ejecutar `node src/medir-recurrentes.js`)*
+
+| `n`  | Tiempo (`ms`)    | Factor vs. anterior |
+| :----- | :----------------- | :------------------ |
+| 1.000  | *(tu medición)* | —                  |
+| 2.000  | *(tu medición)* | ~4x                 |
+| 4.000  | *(tu medición)* | ~4x                 |
+| 8.000  | *(tu medición)* | ~4x                 |
+| 16.000 | *(tu medición)* | ~4x                 |
+
+**Análisis de duplicación y $O(n^2)$:**
+Cuando $n$ se duplica ($\times 2$), el número de pares $\frac{n(n-1)}{2}$ se multiplica aproximadamente por $2^2 = 4$. Por eso el tiempo de ejecución crece cerca de **4 veces** en cada duplicación, característica de una complejidad cuadrática $O(n^2)$.
+
+### 3. Estimación para 100.000 y 1.000.000 de ventas
+
+Usando la regla cuadrática a partir de la medición base en $n_{\text{base}} = 16.000$ con tiempo $t_{\text{base}}$:
+
+$$
+t_{\text{estimado}}(n) = t_{\text{base}} \times \left(\frac{n}{16.000}\right)^2
+$$
+
+- Para $n = 100.000$ ($\text{factor} = 6.25 \implies 6.25^2 = 39.0625$): se multiplica el tiempo de $16.000$ por $\approx 39.1$.
+- Para $n = 1.000.000$ ($\text{factor} = 62.5 \implies 62.5^2 = 3.906.25$): se multiplica el tiempo de $16.000$ por $\approx 3.906.25$.
+  *(Solo se ejecuta $n = 100.000$ si la estimación resulta menor a $120.000\text{ ms}$ / 2 minutos).*
+
+### 4. Costo oculto de `recurrentes.includes(...)` en el peor caso
+
+`recurrentes.includes(ventas[i].cliente)` no es una consulta instantánea: recorre el arreglo `recurrentes` elemento por elemento hasta encontrar el valor o llegar al final. En el **peor caso** (cuando casi todos los clientes son recurrentes, por lo que `recurrentes` crece hasta tamaño $k$, cercano a $n$), cada verificación dentro del doble ciclo puede costar hasta $O(n)$, elevando aún más el trabajo total en el peor caso (hasta $O(n^3)$ en el peor escenario teórico si se evalúa en cada iteración del par).
+
+### 5. Conclusión para la gerente (sin tecnicismos)
+
+Cuando Café Origen tenía pocas ventas, revisar cada compra contra todas las demás tomaba un instante. Pero cuando el negocio crezca a cientos de miles o un millón de ventas, comparar cada compra con el resto del historial hace que el trabajo se dispare muchísimo más rápido que la cantidad de ventas: duplicar las ventas cuadruplica la espera, y pasar a un millón de ventas puede hacer que el reporte tarde minutos en responder.
+
+---
