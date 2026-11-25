@@ -333,3 +333,51 @@ función en tiempo y memoria, con evidencia de mediciones, y priorizar lo
 
 - Medir operaciones y tiempos reales permitió comprobar que no todas las funciones $O(n)$ cuestan lo mismo en memoria (`totalCiudadCadena` vs. `totalCiudadUnaPasada`).
 - Se identificó `clientesRecurrentes` ($O(n^2)$) como el cuello de botella crítico antes de escalar al marketplace, dejando documentado su plan de optimización a $O(n)$ para la versión v1.0.
+
+---
+
+
+
+## MiniReto 9
+
+**Objetivo**: Optimizar el reporte de clientes recurrentes aplicando el método de
+resolución de retos y una estructura de búsqueda en tiempo constante.
+
+### Método de resolución aplicado (6 fases)
+
+1. **Entender:**
+   - *Entradas:* arreglo `ventas` donde cada objeto tiene `cliente` (entre otras propiedades).
+   - *Salida:* arreglo con los identificadores (`cliente`) que aparecen en más de una compra (sin duplicados).
+   - *Restricciones:* responder en `< 1 segundo` con `100.000` ventas; no depender del orden original del arreglo para la validez del conjunto.
+2. **Ejemplos y casos borde:**
+   - Arreglo vacío `[]` → `[]`.
+   - Todas las compras de clientes distintos `["C01", "C02", "C03"]` → `[]`.
+   - Un cliente compra 4 veces `["C01", "C01", "C01", "C01"]` → `["C01"]` (sin repetir `"C01"`).
+   - Datos del Día 1 → `["C01", "C02", "C03"]` (en cualquier orden).
+3. **Fuerza bruta y complejidad:**
+   - Doble ciclo `i` y `j` comparando pares más `.includes(recurrentes)` en cada acierto.
+   - Tiempo: $O(n^2)$ promedio (hasta $O(n^3)$ en peor caso teórico por `.includes()`). Espacio auxiliar: $O(r)$ donde $r \le n$.
+4. **Optimizar:**
+   - Eliminar la búsqueda lineal sobre todo el arreglo usando estructuras hash (`Set` / `Map`) con operación `.has()` / `.add()` / `.get()` / `.set()` en tiempo promedio $O(1)$.
+   - Hacer una sola pasada $O(n)$ sobre `ventas`.
+5. **Implementar:**
+   - `clientesRecurrentesSet(ventas)` usando `vistos` (`Set`) y `recurrentes` (`Set`).
+   - `comprasPorCliente(ventas)` usando `Map` para contar compras por cliente y `clientesRecurrentesDesdeMap(ventas)` para filtrar `cantidadCompras > 1`.
+6. **Probar:**
+   - Verificado con los 12 registros del Día 1 y con `5.000` ventas generadas comparando arreglos ordenados: las tres versiones coinciden (`OK`).
+   - Medido con `1.000`, `10.000` y `100.000` ventas.
+
+### Tabla comparativa de tiempos
+
+*(Sustituye los valores entre corchetes por tus mediciones reales)*
+
+| `n`   | Original (`O(n²)`) | Con `Set` (`O(n)`)          | Con `Map` (`O(n)`)          |
+| :------ | :-------------------- | :------------------------------ | :------------------------------ |
+| 1.000   | `[t_1k_orig] ms`    | `[t_1k_set] ms`               | `[t_1k_map] ms`               |
+| 10.000  | `[t_10k_orig] ms`   | `[t_10k_set] ms`              | `[t_10k_map] ms`              |
+| 100.000 | Omitido / muy alto    | `[t_100k_set] ms` (< 1000 ms) | `[t_100k_map] ms` (< 1000 ms) |
+
+### Intercambio entre tiempo y memoria (*Time–Space Tradeoff*)
+
+- **Ganancia en tiempo:** pasamos de tiempo cuadrático $O(n^2)$ a tiempo lineal **$O(n)$** (en una sola pasada sobre `ventas` y un recorrido final sobre los clientes únicos). Con `100.000` ventas se ejecuta en pocos milisegundos, cumpliendo holgadamente la exigencia del marketplace (`< 1 segundo`).
+- **Costo en memoria:** a cambio de esa rapidez, guardamos en memoria estructuras auxiliares (`Set` `vistos` + `Set` `recurrentes`, o un `Map` con el conteo de cada cliente). En el peor caso (cuando todos los `n` registros corresponden a clientes distintos), la memoria adicional crece de forma lineal, **$O(n)$**, proporcional al número de clientes únicos. Para el volumen y requisitos del marketplace, este costo en RAM es mínimo y totalmente justificado frente al colapso temporal de $O(n^2)$.

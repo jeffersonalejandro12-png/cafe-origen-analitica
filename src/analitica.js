@@ -212,6 +212,47 @@ function clientesRecurrentes(ventas) {
   return recurrentes;
 }
 
+function clientesRecurrentesSet(ventas) {
+  const vistos = new Set();
+  const recurrentes = new Set();
+
+  for (const venta of ventas) {
+    const cliente = venta.cliente;
+    if (vistos.has(cliente)) {
+      recurrentes.add(cliente);
+    } else {
+      vistos.add(cliente);
+    }
+  }
+
+  return Array.from(recurrentes);
+}
+
+function comprasPorCliente(ventas) {
+  const conteo = new Map();
+
+  for (const venta of ventas) {
+    const cliente = venta.cliente;
+    const actual = conteo.has(cliente) ? conteo.get(cliente) : 0;
+    conteo.set(cliente, actual + 1);
+  }
+
+  return conteo;
+}
+
+function clientesRecurrentesDesdeMap(ventas) {
+  const conteo = comprasPorCliente(ventas);
+  const recurrentes = [];
+
+  for (const [cliente, cantidadCompras] of conteo.entries()) {
+    if (cantidadCompras > 1) {
+      recurrentes.push(cliente);
+    }
+  }
+
+  return recurrentes;
+}
+
 function totalCiudadCadena(ventas, ciudad) {
   const objetivo = String(ciudad).trim().toLowerCase();
 
@@ -258,5 +299,7 @@ module.exports = {
   totalPorCiudadInst,
   clientesRecurrentes,
   totalCiudadCadena,
-  totalCiudadUnaPasada
+  totalCiudadUnaPasada,
+  clientesRecurrentesSet,
+  clientesRecurrentesDesdeMap
 };
