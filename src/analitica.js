@@ -212,6 +212,32 @@ function clientesRecurrentes(ventas) {
   return recurrentes;
 }
 
+function totalCiudadCadena(ventas, ciudad) {
+  const objetivo = String(ciudad).trim().toLowerCase();
+
+  return ventas
+    .map((venta) => ({
+      ...venta,
+      ciudadNormalizada: String(venta.ciudad).trim().toLowerCase()
+    }))
+    .filter((venta) => venta.ciudadNormalizada === objetivo)
+    .map((venta) => valorVenta(venta))
+    .reduce((acumulado, monto) => acumulado + monto, 0);
+}
+
+function totalCiudadUnaPasada(ventas, ciudad) {
+  const objetivo = String(ciudad).trim().toLowerCase();
+  let total = 0;
+
+  for (const venta of ventas) {
+    if (String(venta.ciudad).trim().toLowerCase() === objetivo) {
+      total += valorVenta(venta);
+    }
+  }
+
+  return total;
+}
+
 module.exports = {
   valorVenta,
   totalVendido,
@@ -230,5 +256,7 @@ module.exports = {
   totalVendidoInst,
   ventaMayorInst,
   totalPorCiudadInst,
-  clientesRecurrentes
+  clientesRecurrentes,
+  totalCiudadCadena,
+  totalCiudadUnaPasada
 };

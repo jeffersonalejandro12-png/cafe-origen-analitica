@@ -273,3 +273,45 @@ $$
 Cuando Café Origen tenía pocas ventas, revisar cada compra contra todas las demás tomaba un instante. Pero cuando el negocio crezca a cientos de miles o un millón de ventas, comparar cada compra con el resto del historial hace que el trabajo se dispare muchísimo más rápido que la cantidad de ventas: duplicar las ventas cuadruplica la espera, y pasar a un millón de ventas puede hacer que el reporte tarde minutos en responder.
 
 ---
+
+
+## MiniReto 7
+
+**Objetivo**: Analizar la complejidad espacial de las funciones del motor y comparar una cadena de métodos con un recorrido único.
+
+### 1. Comparación de `totalCiudadCadena` vs. `totalCiudadUnaPasada`
+
+| Aspecto                                | `totalCiudadCadena`                                                                                 | `totalCiudadUnaPasada`                                                              |
+| :------------------------------------- | :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| **Recorridos completos**         | **4 pasadas** (`map` normaliza, `filter` filtra, `map` calcula valor, `reduce` acumula) | **1 pasada** (`for...of` evalúa y acumula en un solo ciclo)                  |
+| **Arreglos nuevos creados**      | **3 arreglos intermedios** (el del primer `map`, el de `filter` y el del segundo `map`)   | **0 arreglos intermedios**                                                      |
+| **Complejidad temporal (Big O)** | $O(n)$ (en detalle, $4n$ recorridos → se simplifica a $O(n)$)                                  | $O(n)$ (en detalle, $1n$ recorrido → $O(n)$)                                   |
+| **Complejidad espacial (Big O)** | $O(n)$ en memoria auxiliar por los arreglos intermedios (hasta tamaño $n$)                       | $O(1)$ en memoria auxiliar (solo variables escalares como `objetivo` y `total`) |
+
+### 2. Por qué $O(4n)$ se simplifica a $O(n)$
+
+En notación Big O analizamos la **tasa de crecimiento asintótica** cuando $n$ crece mucho, no el conteo exacto de instrucciones. Multiplicar el trabajo por una constante fija (como hacer $4$ pasadas en vez de $1$, es decir, $4n$) escala de forma **lineal** con $n$: si $n$ se multiplica por 10, $4n$ también se multiplica por 10. Por las reglas de simplificación de Big O, **se eliminan las constantes multiplicativas**, por lo que tanto $O(4n)$ como $O(n)$ pertenecen a la clase $O(n)$.
+
+### 3. Complejidad espacial del motor (memoria adicional)
+
+- **`primeraVenta`:** Espacio $O(1)$ — no crea estructuras proporcionales a `ventas`.
+- **`valorVenta`:** Espacio $O(1)$ — solo multiplica dos valores.
+- **`totalVendido` / `totalVendidoM` / `unidadesVendidas` / `unidadesVendidasM`:**
+  - `totalVendido` y `unidadesVendidas` (con `for...of`): Espacio auxiliar $O(1)$ (solo un acumulador numérico).
+  - `totalVendidoM` y `unidadesVendidasM` (con `.map().reduce()`): Espacio auxiliar $O(n)$ por el arreglo intermedio creado por `.map()`.
+- **`ventaMayor`:** Espacio auxiliar $O(1)$ — guarda solo una referencia al registro mayor actual.
+- **`ticketPromedio`:** Espacio auxiliar $O(1)$ — usa dos contadores/acumuladores numéricos.
+- **`ventasPorCiudad` / `ventasPorCiudadM`:**
+  - `ventasPorCiudad` (con `for...of`): Espacio auxiliar $O(1)$ (un acumulador numérico).
+  - `ventasPorCiudadM` (`.filter().reduce()`): Espacio auxiliar $O(n)$ en el peor caso (si todas las ventas pertenecen a esa ciudad, `.filter()` crea un arreglo de tamaño $n$).
+- **`ventasDelDia`:** Espacio $O(k)$ donde $k \le n$ es la cantidad de ventas del día filtrado (en el peor caso, si todas las ventas son del mismo día, $O(n)$).
+- **`totalPorCiudad`:** Espacio auxiliar $O(c)$ donde $c$ es el número de ciudades distintas. Como el conjunto de ciudades es acotado/fijo (4 ciudades en el dominio actual), en práctica es $O(1)$ acotado (o $O(u)$ si el número de ciudades únicas creciera con los datos).
+- **`unidadesPorProducto`:** Espacio auxiliar $O(p)$ donde $p$ es el número de productos distintos (en el catálogo actual es acotado, y en general proporcional a la cantidad de productos únicos).
+- **`topProductosPorValor`:** Espacio auxiliar $O(p)$ para el diccionario de productos y el arreglo de entradas/ordenamiento (donde $p$ es la cantidad de productos distintos; $p \le n$).
+- **`clientesRecurrentes`:** Espacio auxiliar $O(r)$ donde $r \le n$ es la cantidad de clientes recurrentes almacenados en el arreglo `recurrentes` (en el peor caso, $O(n)$).
+
+### 4. Decisión final y justificación
+
+Dejaré **`totalCiudadUnaPasada`** como implementación principal en el motor para producción/marketplace. Aunque `totalCiudadCadena` es muy expresiva y legible para transformaciones cortas, en un servidor con memoria limitada y cientos de miles de registros evitar **3 arreglos intermedios** y **3 recorridos extra** reduce la presión sobre la memoria y el *garbage collector* (recolector de basura), manteniendo exactamente la misma claridad de propósito con una función corta y directa.
+
+---

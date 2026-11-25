@@ -56,3 +56,4 @@ console.log("\ntopProductosPorValor(ventas, 3):", top3);
 const ordenActualIds = ventas.map((v) => v.id);
 const sinMutacion = JSON.stringify(ordenOriginalIds) === JSON.stringify(ordenActualIds);
 console.log("\n¿Arreglo ventas sin mutar?:", sinMutacion ? "OK" : "DIFERENTE");
+
