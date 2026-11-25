@@ -279,6 +279,99 @@ function totalCiudadUnaPasada(ventas, ciudad) {
   return total;
 }
 
+function comboRegaloFuerzaBruta(catalogo, valor) {
+  for (let i = 0; i < catalogo.length; i++) {
+    for (let j = i + 1; j < catalogo.length; j++) {
+      if (
+        catalogo[i].producto !== catalogo[j].producto &&
+        catalogo[i].precio + catalogo[j].precio === valor
+      ) {
+        return [catalogo[i], catalogo[j]];
+      }
+    }
+  }
+  return null;
+}
+
+function comboRegalo(catalogo, valor) {
+  // Guarda precio -> producto ya visto para resolver en una sola pasada O(n)
+  const vistosPorPrecio = new Map();
+
+  for (const item of catalogo) {
+    const complemento = valor - item.precio;
+    if (vistosPorPrecio.has(complemento)) {
+      const compañero = vistosPorPrecio.get(complemento);
+      if (compañero.producto !== item.producto) {
+        return [compañero, item];
+      }
+    }
+    if (!vistosPorPrecio.has(item.precio)) {
+      vistosPorPrecio.set(item.precio, item);
+    }
+  }
+
+  return null;
+}
+
+function productoEstrellaPorCiudad(ventas) {
+  // Mapa exterior: ciudadNormalizada -> Map(producto -> conteo)
+  const conteoPorCiudad = new Map();
+
+  for (const venta of ventas) {
+    const ciudad = normalizarNombre(venta.ciudad);
+    const producto = String(venta.producto).trim();
+
+    if (!conteoPorCiudad.has(ciudad)) {
+      conteoPorCiudad.set(ciudad, new Map());
+    }
+
+    const mapaProductos = conteoPorCiudad.get(ciudad);
+    const actual = mapaProductos.has(producto) ? mapaProductos.get(producto) : 0;
+    mapaProductos.set(producto, actual + 1);
+  }
+
+  const resultado = {};
+
+  for (const [ciudad, mapaProductos] of conteoPorCiudad.entries()) {
+    let estrella = null;
+    let maxApariciones = 0;
+
+    // Regla de desempate: mayor cantidad estricta (>) conserva el primero en aparecer en el Map
+    for (const [producto, apariciones] of mapaProductos.entries()) {
+      if (apariciones > maxApariciones) {
+        maxApariciones = apariciones;
+        estrella = producto;
+      }
+    }
+
+    resultado[ciudad] = {
+      producto: estrella,
+      apariciones: maxApariciones
+    };
+  }
+
+  return resultado;
+}
+
+function primerClienteUnico(ventas) {
+  const frecuencia = new Map();
+
+  // Primer recorrido: contar cuántas apariciones tiene cada cliente
+  for (const venta of ventas) {
+    const cliente = venta.cliente;
+    frecuencia.set(cliente, (frecuencia.get(cliente) || 0) + 1);
+  }
+
+  // Segundo recorrido: devolver el primero en el orden de ventas con frecuencia === 1
+  for (const venta of ventas) {
+    if (frecuencia.get(venta.cliente) === 1) {
+      return venta.cliente;
+    }
+  }
+
+  return null;
+}
+
 module.exports = {
   valorVenta,
   totalVendido,
@@ -301,5 +394,9 @@ module.exports = {
   totalCiudadCadena,
   totalCiudadUnaPasada,
   clientesRecurrentesSet,
-  clientesRecurrentesDesdeMap
+  clientesRecurrentesDesdeMap,
+  comboRegaloFuerzaBruta,
+  comboRegalo,
+  productoEstrellaPorCiudad,
+  primerClienteUnico
 };

@@ -381,3 +381,36 @@ resolución de retos y una estructura de búsqueda en tiempo constante.
 
 - **Ganancia en tiempo:** pasamos de tiempo cuadrático $O(n^2)$ a tiempo lineal **$O(n)$** (en una sola pasada sobre `ventas` y un recorrido final sobre los clientes únicos). Con `100.000` ventas se ejecuta en pocos milisegundos, cumpliendo holgadamente la exigencia del marketplace (`< 1 segundo`).
 - **Costo en memoria:** a cambio de esa rapidez, guardamos en memoria estructuras auxiliares (`Set` `vistos` + `Set` `recurrentes`, o un `Map` con el conteo de cada cliente). En el peor caso (cuando todos los `n` registros corresponden a clientes distintos), la memoria adicional crece de forma lineal, **$O(n)$**, proporcional al número de clientes únicos. Para el volumen y requisitos del marketplace, este costo en RAM es mínimo y totalmente justificado frente al colapso temporal de $O(n^2)$.
+
+---
+
+
+
+## MiniReto 10
+
+**Objetivo**: Resolver problemas de complementos y de conteo de frecuencias con estructuras clave–valor en tiempo lineal.
+
+### 1. Traza de `comboRegalo(catalogo, 87000)`
+
+Objetivo: `valor = 87000`. Se va llenando `vistosPorPrecio` (`precio -> item`) en una sola pasada:
+
+| Paso | `item` (`producto`, `precio`)  | `complemento = 87000 - precio` | ¿Existe `complemento` en `vistosPorPrecio`?    | `vistosPorPrecio` al final del paso              | Acción / Retorno                                               |
+| :--- | :----------------------------------- | :------------------------------- | :-------------------------------------------------- | :------------------------------------------------- | :-------------------------------------------------------------- |
+| 1    | `Origen Nariño 250 g` (`26000`) | `61000`                        | No                                                  | `{ 26000 => Nariño 250g }`                      | Continúa                                                       |
+| 2    | `Origen Huila 500 g` (`42000`)   | `45000`                        | No                                                  | `{ 26000 => Nariño 250g, 42000 => Huila 500g }` | Continúa                                                       |
+| 3    | `Origen Sierra 500 g` (`45000`)  | `42000`                        | **Sí** (`42000` → `Origen Huila 500 g`) | `{ ..., 45000 => Sierra 500g }`                  | **Retorna `[Origen Huila 500 g, Origen Sierra 500 g]`** |
+
+*(Con `61000` encuentra `Origen Nariño 250 g` (`26000`) + `Taza de cerámica` (`35000`); con `500000` o `[]` devuelve `null`.)*
+
+### 2. Regla de desempate en `productoEstrellaPorCiudad`
+
+- **Regla adoptada:** Se actualiza el producto estrella solo cuando `apariciones > maxApariciones` (desigualdad estricta). En caso de empate exacto en frecuencia, **gana el primer producto que alcanzó ese máximo** según el orden de aparición en el `Map` (y devuelve `{}` si `ventas` está vacío).
+
+### 3. Clasificación de complejidad y justificación
+
+- **`comboRegaloFuerzaBruta(catalogo, valor)`:** Tiempo **$O(m^2)$** (donde $m$ es el tamaño del catálogo; prueba todos los pares `(i, j)`), Espacio **$O(1)$**.
+- **`comboRegalo(catalogo, valor)`:** Tiempo **$O(m)$** (recorre el catálogo una sola vez y cada `.has()` / `.get()` / `.set()` en `Map` es $O(1)$ promedio), Espacio **$O(m)$** en el peor caso (guarda hasta $m$ entradas en `vistosPorPrecio`).
+- **`productoEstrellaPorCiudad(ventas)`:** Tiempo **$O(n)$** (recorre las $n$ ventas una sola vez acumulando en un `Map` por ciudad; luego recorre las ciudades y sus productos, de cardinalidad acotada), Espacio **$O(c \cdot p)$** (acotado por ciudades $c$ y productos $p$).
+- **`primerClienteUnico(ventas)`:** Tiempo **$O(n)$** (hace dos recorridos lineales independientes sobre `ventas`: uno para contar frecuencias en un `Map` y otro para encontrar el primer cliente con frecuencia `1`; `2n` se simplifica a $O(n)$), Espacio **$O(u)$** donde $u \le n$ es la cantidad de clientes distintos en el `Map` (en el Día 1 devuelve `"C04"`, y con `[]` devuelve `null`).
+
+---
