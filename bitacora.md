@@ -414,3 +414,58 @@ Objetivo: `valor = 87000`. Se va llenando `vistosPorPrecio` (`precio -> item`) e
 - **`primerClienteUnico(ventas)`:** Tiempo **$O(n)$** (hace dos recorridos lineales independientes sobre `ventas`: uno para contar frecuencias en un `Map` y otro para encontrar el primer cliente con frecuencia `1`; `2n` se simplifica a $O(n)$), Espacio **$O(u)$** donde $u \le n$ es la cantidad de clientes distintos en el `Map` (en el Día 1 devuelve `"C04"`, y con `[]` devuelve `null`).
 
 ---
+
+
+
+## MiniReto 11
+
+**Objetivo**: Aplicar la ventana deslizante de tamaño fijo y la técnica de dos
+punteros sobre datos ordenados para resolver problemas de negocio en
+tiempo lineal.
+
+### 1. Tres primeras posiciones de la ventana en septiembre ($k = 7$)
+
+Arreglo inicial: `[320, 410, 280, 390, 510, 620, 700, 300, 290, ...]`
+
+- **Posición 1 (Días 1 al 7, índices `0..6`):**
+  `[320, 410, 280, 390, 510, 620, 700]` → **Total = `3.230`** (miles de pesos).
+- **Posición 2 (Días 2 al 8, índices `1..7`):**
+  Sale `320` (`dias[0]`), entra `300` (`dias[7]`) → `3.230 - 320 + 300` = **Total = `3.210`**.
+- **Posición 3 (Días 3 al 9, índices `2..8`):**
+  Sale `410` (`dias[1]`), entra `290` (`dias[8]`) → `3.210 - 410 + 290` = **Total = `3.090`**.
+
+**Resultado óptimo del mes (verificado por fuerza bruta y ventana deslizante):** Día de inicio **24** (`indiceInicio: 23`, días 24 al 30: `[440, 500, 590, 650, 720, 400, 370]`) con un total máximo de **`3.670`** miles de pesos (`$3.670.000`). Caso borde `k > días`: `null`.
+
+### 2. Comparación con 100.000 días ($k = 7$)
+
+- Ambas funciones coinciden (`OK`).
+- Tiempo fuerza bruta: `2.058 ms`.
+- Tiempo ventana deslizante: `1.468 ms`.
+
+### 3. Traza de dos punteros en `parMasCercano(catalogo, 100000)`
+
+Catálogo ordenado ascendentemente por precio:
+`[0: Filtros (18k), 1: Nariño 250g (26k), 2: Taza (35k), 3: Huila 500g (42k), 4: Sierra 500g (45k), 5: Huila 1kg (79k), 6: Prensa (95k), 7: Molino (120k)]`
+
+| Paso | `izq` (Producto / Precio)          | `der` (Producto / Precio)         | `suma`    | Decisión y por qué se mueve el puntero                                                                                 | `mejorPar` / `mejorSuma`                                          |
+| :--- | :----------------------------------- | :---------------------------------- | :---------- | :----------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 1    | `0` (`Filtros`, `18.000`)      | `7` (`Molino`, `120.000`)     | `138.000` | `138.000 > 100.000` (excede presupuesto) → mueve `der--` para reducir la suma.                                      | `null` (`-∞`)                                                    |
+| 2    | `0` (`Filtros`, `18.000`)      | `6` (`Prensa`, `95.000`)      | `113.000` | `113.000 > 100.000` (excede presupuesto) → mueve `der--` para reducir la suma.                                      | `null` (`-∞`)                                                    |
+| 3    | `0` (`Filtros`, `18.000`)      | `5` (`Huila 1kg`, `79.000`)   | `97.000`  | `97.000 <= 100.000` (válido y mejora `-∞`) → guarda par y mueve `izq++` para buscar una suma aún más cercana. | `[Filtros, Huila 1kg]` (`97.000`)                                 |
+| 4    | `1` (`Nariño 250g`, `26.000`) | `5` (`Huila 1kg`, `79.000`)   | `105.000` | `105.000 > 100.000` (excede) → mueve `der--`.                                                                       | `[Filtros, Huila 1kg]` (`97.000`)                                 |
+| 5    | `1` (`Nariño 250g`, `26.000`) | `4` (`Sierra 500g`, `45.000`) | `71.000`  | `71.000 <= 100.000` (no supera `97.000`) → mueve `izq++`.                                                         | `[Filtros, Huila 1kg]` (`97.000`)                                 |
+| 6    | `2` (`Taza`, `35.000`)         | `4` (`Sierra 500g`, `45.000`) | `80.000`  | `80.000 <= 100.000` (no supera `97.000`) → mueve `izq++`.                                                         | `[Filtros, Huila 1kg]` (`97.000`)                                 |
+| 7    | `3` (`Huila 500g`, `42.000`)   | `4` (`Sierra 500g`, `45.000`) | `87.000`  | `87.000 <= 100.000` (no supera `97.000`) → mueve `izq++` (`izq === der`, termina).                              | **`[Filtros de papel x100, Origen Huila 1 kg]` (`97.000`)** |
+
+Resultados adicionales verificados:
+
+- Presupuesto `140.000`: `[Origen Sierra 500 g (45.000), Prensa francesa (95.000)]` → total `140.000`.
+- Presupuesto `40.000`: `null` (sin solución).
+
+### 4. Clasificación de complejidad
+
+- **`mejorSemanaBruta(dias, k)`:** Tiempo **$O(n \cdot k)$** (hasta $n - k + 1$ ventanas sumando $k$ días cada una), Espacio **$O(1)$**.
+- **`mejorSemana(dias, k)` (ventana deslizante):** Tiempo **$O(n)$** (suma inicial de $k$ días + $n - k$ actualizaciones restando el que sale y sumando el que entra en $O(1)$), Espacio **$O(1)$**.
+- **`parMasCercano(catalogo, presupuesto)`:** Tiempo **$O(m \log m)$** por ordenar una copia del catálogo antes del recorrido de dos punteros en $O(m)$, Espacio **$O(m)$**.
+
+---

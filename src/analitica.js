@@ -2,7 +2,6 @@ function valorVenta(venta) {
   return venta.cantidad * venta.precio;
 }
 
-// --- MiniReto 2 (ciclos for...of) ---
 
 function totalVendido(ventas) {
   let total = 0;
@@ -62,7 +61,6 @@ function ventasPorCiudad(ventas, ciudad) {
   return totalCiudad;
 }
 
-// --- Helper de normalización para nombres ---
 
 function normalizarNombre(texto) {
   const limpio = String(texto).trim().toLowerCase();
@@ -77,7 +75,6 @@ function normalizarNombre(texto) {
     .join(" ");
 }
 
-// --- MiniReto 3 (métodos de arreglo, agrupaciones y ranking) ---
 
 function totalVendidoM(ventas) {
   return ventas
@@ -160,7 +157,7 @@ function primeraVenta(ventas, contador = { ops: 0 }) {
 function totalVendidoInst(ventas, contador) {
   let total = 0;
   for (const venta of ventas) {
-    contador.ops += 1; // visita/procesa un elemento
+    contador.ops += 1;
     total += valorVenta(venta);
   }
   return total;
@@ -169,12 +166,12 @@ function totalVendidoInst(ventas, contador) {
 function ventaMayorInst(ventas, contador) {
   let mayor = null;
   for (const venta of ventas) {
-    contador.ops += 1; // visita un elemento
+    contador.ops += 1; 
     if (mayor === null) {
-      contador.ops += 1; // comparación inicial
+      contador.ops += 1;
       mayor = venta;
     } else {
-      contador.ops += 1; // comparación entre valores
+      contador.ops += 1; 
       if (valorVenta(venta) > valorVenta(mayor)) {
         mayor = venta;
       }
@@ -294,7 +291,7 @@ function comboRegaloFuerzaBruta(catalogo, valor) {
 }
 
 function comboRegalo(catalogo, valor) {
-  // Guarda precio -> producto ya visto para resolver en una sola pasada O(n)
+
   const vistosPorPrecio = new Map();
 
   for (const item of catalogo) {
@@ -314,7 +311,7 @@ function comboRegalo(catalogo, valor) {
 }
 
 function productoEstrellaPorCiudad(ventas) {
-  // Mapa exterior: ciudadNormalizada -> Map(producto -> conteo)
+
   const conteoPorCiudad = new Map();
 
   for (const venta of ventas) {
@@ -336,7 +333,7 @@ function productoEstrellaPorCiudad(ventas) {
     let estrella = null;
     let maxApariciones = 0;
 
-    // Regla de desempate: mayor cantidad estricta (>) conserva el primero en aparecer en el Map
+  
     for (const [producto, apariciones] of mapaProductos.entries()) {
       if (apariciones > maxApariciones) {
         maxApariciones = apariciones;
@@ -356,13 +353,13 @@ function productoEstrellaPorCiudad(ventas) {
 function primerClienteUnico(ventas) {
   const frecuencia = new Map();
 
-  // Primer recorrido: contar cuántas apariciones tiene cada cliente
+
   for (const venta of ventas) {
     const cliente = venta.cliente;
     frecuencia.set(cliente, (frecuencia.get(cliente) || 0) + 1);
   }
 
-  // Segundo recorrido: devolver el primero en el orden de ventas con frecuencia === 1
+
   for (const venta of ventas) {
     if (frecuencia.get(venta.cliente) === 1) {
       return venta.cliente;
@@ -370,6 +367,96 @@ function primerClienteUnico(ventas) {
   }
 
   return null;
+}
+
+
+function mejorSemanaBruta(dias, k = 7) {
+  if (!Array.isArray(dias) || k <= 0 || dias.length < k) {
+    return null;
+  }
+
+  let maxTotal = -Infinity;
+  let diaInicio = 1; 
+
+  for (let i = 0; i <= dias.length - k; i++) {
+    let sumaBloque = 0;
+    for (let j = i; j < i + k; j++) {
+      sumaBloque += dias[j];
+    }
+    if (sumaBloque > maxTotal) {
+      maxTotal = sumaBloque;
+      diaInicio = i + 1;
+    }
+  }
+
+  return {
+    diaInicio,
+    indiceInicio: diaInicio - 1,
+    total: maxTotal
+  };
+}
+
+function mejorSemana(dias, k = 7) {
+  if (!Array.isArray(dias) || k <= 0 || dias.length < k) {
+    return null;
+  }
+
+ 
+  let sumaVentana = 0;
+  for (let i = 0; i < k; i++) {
+    sumaVentana += dias[i];
+  }
+
+  let maxTotal = sumaVentana;
+  let indiceInicio = 0;
+
+  
+  for (let i = k; i < dias.length; i++) {
+    sumaVentana = sumaVentana + dias[i] - dias[i - k];
+    if (sumaVentana > maxTotal) {
+      maxTotal = sumaVentana;
+      indiceInicio = i - k + 1;
+    }
+  }
+
+  return {
+    diaInicio: indiceInicio + 1,
+    indiceInicio,
+    total: maxTotal
+  };
+}
+
+function parMasCercano(catalogo, presupuesto) {
+  if (!Array.isArray(catalogo) || catalogo.length < 2) {
+    return null;
+  }
+
+  
+  const ordenados = [...catalogo].sort((a, b) => a.precio - b.precio);
+
+  let izquierda = 0;
+  let derecha = ordenados.length - 1;
+  let mejorPar = null;
+  let mejorSuma = -Infinity;
+
+  
+  while (izquierda < derecha) {
+    const prodIzq = ordenados[izquierda];
+    const prodDer = ordenados[derecha];
+    const suma = prodIzq.precio + prodDer.precio;
+
+    if (suma <= presupuesto) {
+      if (suma > mejorSuma) {
+        mejorSuma = suma;
+        mejorPar = [prodIzq, prodDer];
+      }
+      izquierda += 1; 
+    } else {
+      derecha -= 1; 
+    }
+  }
+
+  return mejorPar ? { productos: mejorPar, total: mejorSuma } : null;
 }
 
 module.exports = {
@@ -398,5 +485,8 @@ module.exports = {
   comboRegaloFuerzaBruta,
   comboRegalo,
   productoEstrellaPorCiudad,
-  primerClienteUnico
+  primerClienteUnico,
+  mejorSemanaBruta,
+  mejorSemana,
+  parMasCercano
 };
