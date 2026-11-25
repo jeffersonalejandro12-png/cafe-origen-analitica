@@ -105,3 +105,56 @@ de forma explícita.
 1. Arreglo completo: 356000 (incluye id 1, id 4, id 5 con "medellín" y id 11)
 2. Un solo elemento: 84000 (si se busca otra ciudad distinta a "Medellín", da 0)
 3. Arreglo vacío: 0
+
+---
+
+
+
+## MiniReto 3
+
+**Objetivo**: Reescribir indicadores con `map`, `filter` y `reduce`, y construir agrupaciones y rankings con objetos como diccionarios y ordenamiento con criterio.
+
+### Análisis por función (5 preguntas sobre colecciones)
+
+1. **`totalVendidoM(ventas)`**
+
+   - **¿Qué recorro?** El arreglo `ventas`.
+   - **¿Qué filtro?** Nada (incluye todos los registros).
+   - **¿Qué transformo?** Cada objeto `venta` en su valor monetario (`valorVenta(venta)`).
+   - **¿Qué acumulo?** La suma total de los valores de venta (`acumulado + monto`, iniciando en `0`).
+   - **¿Cómo agrupo?** No agrupa; reduce a un único número total.
+2. **`unidadesVendidasM(ventas)`**
+
+   - **¿Qué recorro?** El arreglo `ventas`.
+   - **¿Qué filtro?** Nada (incluye todos los registros).
+   - **¿Qué transformo?** Cada objeto `venta` en su `cantidad`.
+   - **¿Qué acumulo?** La suma total de unidades (`acumulado + cantidad`, iniciando en `0`).
+   - **¿Cómo agrupo?** No agrupa; reduce a un único número total.
+3. **`ventasPorCiudadM(ventas, ciudad)`**
+
+   - **¿Qué recorro?** El arreglo `ventas`.
+   - **¿Qué filtro?** Las ventas cuya `ciudad` normalizada (`trim().toLowerCase()`) coincide con la ciudad solicitada.
+   - **¿Qué transformo?** Las ventas filtradas a su valor monetario (`valorVenta(venta)`).
+   - **¿Qué acumulo?** La suma de valores de las ventas de esa ciudad (iniciando en `0`).
+   - **¿Cómo agrupo?** No agrupa en diccionario; filtra una ciudad y acumula su total.
+4. **`totalPorCiudad(ventas)`**
+
+   - **¿Qué recorro?** El arreglo `ventas`.
+   - **¿Qué filtro?** Nada (procesa todas las ventas).
+   - **¿Qué transformo?** Cada `venta` aporta su `valorVenta(venta)` bajo su clave de ciudad normalizada (`Medellín`, `Bogotá`, `Cali`, `Pereira`).
+   - **¿Qué acumulo?** El monto acumulado por cada ciudad dentro de un objeto diccionario (`{}`).
+   - **¿Cómo agrupo?** Usando un objeto acumulador donde la clave es el nombre de ciudad normalizado y el valor es el total vendido en ella.
+5. **`unidadesPorProducto(ventas)`**
+
+   - **¿Qué recorro?** El arreglo `ventas`.
+   - **¿Qué filtro?** Nada (procesa todas las ventas).
+   - **¿Qué transformo?** Cada `venta` aporta su `cantidad` asociada a su `producto` (`trim()`).
+   - **¿Qué acumulo?** La suma de unidades por cada producto dentro de un objeto diccionario (`{}`).
+   - **¿Cómo agrupo?** Usando un objeto acumulador cuya clave es el nombre del producto y cuyo valor es la cantidad total vendida.
+6. **`topProductosPorValor(ventas, k)`**
+
+   - **¿Qué recorro?** Primero `ventas` para acumular valores, luego `Object.entries(...)` para ordenar los pares `[producto, total]`.
+   - **¿Qué filtro?** Recorta los `k` primeros elementos del ranking ordenado mediante `.slice(0, k)`.
+   - **¿Qué transformo?** Primero acumula el valor por producto, luego convierte el diccionario en pares `[producto, total]` y finalmente formatea los `k` mejores como objetos `{ producto, totalValor }`.
+   - **¿Qué acumulo?** El valor monetario generado por cada producto (`valorVenta(venta)`).
+   - **¿Cómo agrupo?** Primero agrupa el valor total por producto en un objeto diccionario y luego ordena de mayor a menor sobre una copia (`[...entradas]`) sin mutar `ventas`.
