@@ -315,3 +315,21 @@ En notación Big O analizamos la **tasa de crecimiento asintótica** cuando $n$ 
 Dejaré **`totalCiudadUnaPasada`** como implementación principal en el motor para producción/marketplace. Aunque `totalCiudadCadena` es muy expresiva y legible para transformaciones cortas, en un servidor con memoria limitada y cientos de miles de registros evitar **3 arreglos intermedios** y **3 recorridos extra** reduce la presión sobre la memoria y el *garbage collector* (recolector de basura), manteniendo exactamente la misma claridad de propósito con una función corta y directa.
 
 ---
+
+
+
+## MiniReto 8
+
+**Objetivo**: Documentar el rendimiento del motor de analítica clasificando cada
+función en tiempo y memoria, con evidencia de mediciones, y priorizar lo
+ que se debe optimizar.
+
+### Revisión de `RENDIMIENTO.md` con compañero
+
+- **Observación recibida:** *(Escribe aquí el comentario de tu compañero, por ejemplo: "En la tabla de complejidad falta aclarar qué pasa con `topProductosPorValor` si el catálogo de productos creciera mucho en lugar de ser fijo").*
+- **Respuesta y ajuste realizado:** Se precisó en `RENDIMIENTO.md` que la complejidad de `topProductosPorValor` es $O(n + p \log p)$ en tiempo y $O(p)$ en espacio, aclarando que actualmente $p$ es acotado ($5$ productos), pero si el catálogo creciera proporcionalmente a $n$, el ordenamiento pasaría a comportarse como $O(n \log n)$.
+
+### Conclusiones del Día 2 (Sesión 5 — Big O)
+
+- Medir operaciones y tiempos reales permitió comprobar que no todas las funciones $O(n)$ cuestan lo mismo en memoria (`totalCiudadCadena` vs. `totalCiudadUnaPasada`).
+- Se identificó `clientesRecurrentes` ($O(n^2)$) como el cuello de botella crítico antes de escalar al marketplace, dejando documentado su plan de optimización a $O(n)$ para la versión v1.0.
