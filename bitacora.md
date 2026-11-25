@@ -158,3 +158,25 @@ de forma explícita.
    - **¿Qué transformo?** Primero acumula el valor por producto, luego convierte el diccionario en pares `[producto, total]` y finalmente formatea los `k` mejores como objetos `{ producto, totalValor }`.
    - **¿Qué acumulo?** El valor monetario generado por cada producto (`valorVenta(venta)`).
    - **¿Cómo agrupo?** Primero agrupa el valor total por producto en un objeto diccionario y luego ordena de mayor a menor sobre una copia (`[...entradas]`) sin mutar `ventas`.
+
+## MiniReto 4
+
+**Objetivo**: Integrar las funciones en un reporte de negocio legible por consola y aplicar depuración sistemática a los errores reportados.
+
+### Error 1: "Bogotá aparecía dos veces"
+
+- **Síntoma:** Al agrupar ventas por ciudad, `"Bogotá"` y `"Bogotá "` (o variaciones de mayúsculas/espacios) se registraban como dos claves distintas en el objeto acumulador.
+- **Entrada que lo produce:** Registros con espacios extra al final o al inicio (ej. `"Bogotá "`) o diferencias de capitalización (ej. `"medellín"` frente a `"Medellín"`).
+- **Hipótesis:** La agrupación usa `venta.ciudad` directamente como clave del objeto sin limpiar espacios ni estandarizar el formato del texto.
+- **Prueba realizada:** Se revisó `totalPorCiudad(ventas)` y `ventasPorCiudad(ventas, "Bogotá ")` comparando la salida sin normalizar contra la salida aplicando `.trim()` y normalización de capitalización (`normalizarNombre`).
+- **Causa:** Falta de normalización de cadenas (`trim()` y estandarización de casing) antes de crear o acumular claves en el diccionario de ciudades.
+- **Corrección:** Se normalizó el nombre de ciudad antes de agrupar/comparar, unificando `"Bogotá"` y `"Bogotá "` en una sola entrada y dejando exactamente 4 ciudades (`Medellín`, `Bogotá`, `Cali` y `Pereira`).
+
+### Error 2: "El ticket promedio daba NaN cuando filtraba un día sin ventas"
+
+- **Síntoma:** Al calcular el ticket promedio sobre un subconjunto sin ventas válidas (como un día sin ventas), el resultado mostraba `NaN`.
+- **Entrada que lo produce:** `ticketPromedio([])` o `ticketPromedio(ventasDelDia(ventas, "2026-09-10").registros)` (donde `registros` está vacío, `total = 0` y `ventasValidas = 0`).
+- **Hipótesis:** La función divide `total / ventasValidas` sin verificar si `ventasValidas` es igual a `0`.
+- **Prueba realizada:** Se ejecutó `ticketPromedio([])` y `ventasDelDia(ventas, "2026-09-10")` observando el valor de `total` y `ventasValidas`.
+- **Causa:** División entre cero (`0 / 0`), que en JavaScript produce `NaN`.
+- **Corrección:** Se añadió una guarda `if (ventasValidas === 0) return 0;` antes de realizar la división, garantizando `0` (y sin `NaN` ni errores) en días sin ventas o arreglos vacíos.

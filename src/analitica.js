@@ -139,6 +139,20 @@ function topProductosPorValor(ventas, k) {
   }));
 }
 
+function ventasDelDia(ventas, fecha) {
+  const fechaObjetivo = String(fecha).trim();
+  const registros = ventas.filter((venta) => String(venta.fecha).trim() === fechaObjetivo);
+
+  return {
+    fecha: fechaObjetivo,
+    registros,
+    cantidadVentas: registros.length,
+    totalVendido: totalVendido(registros),
+    unidadesVendidas: unidadesVendidas(registros),
+    ticketPromedio: ticketPromedio(registros)
+  };
+}
+
 module.exports = {
   valorVenta,
   totalVendido,
@@ -151,5 +165,6 @@ module.exports = {
   ventasPorCiudadM,
   totalPorCiudad,
   unidadesPorProducto,
-  topProductosPorValor
+  topProductosPorValor,
+  ventasDelDia
 };
