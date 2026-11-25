@@ -152,6 +152,50 @@ function ventasDelDia(ventas, fecha) {
     ticketPromedio: ticketPromedio(registros)
   };
 }
+function primeraVenta(ventas, contador = { ops: 0 }) {
+  contador.ops += 1;
+  return ventas.length > 0 ? ventas[0] : null;
+}
+
+function totalVendidoInst(ventas, contador) {
+  let total = 0;
+  for (const venta of ventas) {
+    contador.ops += 1; // visita/procesa un elemento
+    total += valorVenta(venta);
+  }
+  return total;
+}
+
+function ventaMayorInst(ventas, contador) {
+  let mayor = null;
+  for (const venta of ventas) {
+    contador.ops += 1; // visita un elemento
+    if (mayor === null) {
+      contador.ops += 1; // comparación inicial
+      mayor = venta;
+    } else {
+      contador.ops += 1; // comparación entre valores
+      if (valorVenta(venta) > valorVenta(mayor)) {
+        mayor = venta;
+      }
+    }
+  }
+  return mayor;
+}
+
+function totalPorCiudadInst(ventas, contador) {
+  const diccionario = {};
+  for (const venta of ventas) {
+    contador.ops += 1; // visita un elemento
+    const ciudadNormalizada = normalizarNombre(venta.ciudad);
+    contador.ops += 1; // consulta/actualización en diccionario
+    if (!Object.prototype.hasOwnProperty.call(diccionario, ciudadNormalizada)) {
+      diccionario[ciudadNormalizada] = 0;
+    }
+    diccionario[ciudadNormalizada] += valorVenta(venta);
+  }
+  return diccionario;
+}
 
 module.exports = {
   valorVenta,
@@ -166,5 +210,9 @@ module.exports = {
   totalPorCiudad,
   unidadesPorProducto,
   topProductosPorValor,
-  ventasDelDia
+  ventasDelDia,
+  primeraVenta,
+  totalVendidoInst,
+  ventaMayorInst,
+  totalPorCiudadInst
 };

@@ -180,3 +180,20 @@ de forma explícita.
 - **Prueba realizada:** Se ejecutó `ticketPromedio([])` y `ventasDelDia(ventas, "2026-09-10")` observando el valor de `total` y `ventasValidas`.
 - **Causa:** División entre cero (`0 / 0`), que en JavaScript produce `NaN`.
 - **Corrección:** Se añadió una guarda `if (ventasValidas === 0) return 0;` antes de realizar la división, garantizando `0` (y sin `NaN` ni errores) en días sin ventas o arreglos vacíos.
+
+
+## MiniReto 5
+
+**Objetivo**: Construir un generador de datos y un contador de operaciones para medir el crecimiento del trabajo de las funciones del motor.
+
+### Comparación predicciones vs. resultados
+
+- Al multiplicar `n` por 10 (`100` → `1.000` → `10.000` → `100.000`), las operaciones de `totalVendidoInst`, `ventaMayorInst` y `totalPorCiudadInst` crecen en un factor cercano a 10x, confirmando la predicción.
+- `primeraVenta` permanece constante (`1` operación) en todos los tamaños de entrada.
+
+### Clasificación Big O y justificación
+
+- **`primeraVenta` — $O(1)$ (tiempo constante):** Accede directamente a `ventas[0]` sin depender de `n`.
+- **`totalVendidoInst` — $O(n)$ (tiempo lineal):** Ejecuta un único ciclo `for...of` de `1` a `n` iteraciones, haciendo un trabajo constante por venta.
+- **`ventaMayorInst` — $O(n)$ (tiempo lineal):** Recorre el arreglo una sola vez (`n` elementos) y realiza comparaciones de costo constante en cada paso.
+- **`totalPorCiudadInst` — $O(n)$ en tiempo promedio (lineal):** Recorre los `n` registros una vez y normaliza/acumula en un objeto diccionario; las ciudades son un conjunto acotado (4 ciudades), por lo que el trabajo por registro es constante.
